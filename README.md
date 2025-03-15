@@ -1,6 +1,6 @@
 # Gestor de Presupuesto Personal
 
-Este es un gestor de presupuesto personal que permite a los usuarios registrar ingresos y gastos, visualizar un resumen financiero en tiempo real y gestionar movimientos recientes. El proyecto está desarrollado con HTML, CSS (Tailwind CSS) y JavaScript.
+Este es un gestor de presupuesto personal que permite a los usuarios registrar ingresos y gastos, visualizar un resumen financiero en tiempo real y gestionar movimientos recientes. El proyecto está desarrollado con CSS (Tailwind CSS) y JavaScript.
 
 ## Características principales
 
