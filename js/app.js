@@ -1,15 +1,12 @@
-// obtener la información del formulario
-// mediante el evento submit
-
-const form = document.querySelector("form");
-
+// Obtener el formulario por su ID
+const form = document.getElementById("transaction-form");
 const transacciones = [];
 
 function getDataFromForm() {
   const formData = new FormData(form);
-  const description = formData.get("description");
-  const amount = formData.get("amount");
-  const type = formData.get("type");
+  const description = formData.get("description"); // Captura la descripción
+  const amount = formData.get("amount"); // Captura el monto
+  const type = formData.get("type"); // Captura el tipo (income/expense)
 
   return {
     description,
@@ -31,35 +28,89 @@ function createMovement(movement) {
     transacciones.push(nuevoMovimiento);
     alert(validacion.message);
     form.reset();
+    nuevoMovimiento.recalcularTotales(); // Actualizar los totales
+    nuevoMovimiento.mostrarTransacciones(); // Mostrar las transacciones en la tabla
   } else {
     alert(validacion.message);
   }
 }
 
-// escuchamos el evento submit
+// Escuchar el evento submit del formulario
 form.addEventListener("submit", function (event) {
-  // ejecutamos los pasos para guardar la información
-  event.preventDefault();
-
+  event.preventDefault(); // Evitar que el formulario se envíe y la página se recargue
   const newMovement = getDataFromForm();
   createMovement(newMovement);
 });
 
-// 1 -> Ingreso
-// 2 -> Egreso
+// Constructor de Movimiento
 function Movimiento(tipo, monto, descripcion) {
   this.tipo = tipo;
   this.monto = monto;
   this.descripcion = descripcion;
 }
 
-// Movimiento.prototype.render = function () {
-//   // insertar la informacion en HTML
-// };
+// Método para recalcular los totales de ingresos y egresos
+Movimiento.prototype.recalcularTotales = function () {
+  let totalIngresos = 0;
+  let totalEgresos = 0;
 
-// Retorne un boolean (true | false)
+  transacciones.forEach((movimiento) => {
+    if (movimiento.tipo === "income") {
+      totalIngresos += Number(movimiento.monto);
+    } else if (movimiento.tipo === "expense") {
+      totalEgresos += Number(movimiento.monto);
+    }
+  });
+
+  // Actualizar la interfaz de usuario con los nuevos totales
+  document.getElementById("income").textContent = `$${totalIngresos.toFixed(2)}`;
+  document.getElementById("expense").textContent = `$${totalEgresos.toFixed(2)}`;
+  document.getElementById("balance").textContent = `$${(totalIngresos - totalEgresos).toFixed(2)}`;
+};
+
+// Método para mostrar las transacciones en la tabla
+Movimiento.prototype.mostrarTransacciones = function () {
+  const transactionList = document.getElementById("transaction-list");
+  transactionList.innerHTML = ""; // Limpiar la tabla antes de actualizar
+
+  if (transacciones.length === 0) {
+    transactionList.innerHTML = `
+      <tr class="text-sm text-gray-500">
+        <td colspan="4" class="px-6 py-4 text-center">No hay movimientos registrados</td>
+      </tr>
+    `;
+    return;
+  }
+
+  transacciones.forEach((movimiento) => {
+    const row = document.createElement("tr");
+    row.classList.add("text-sm", "text-gray-500");
+
+    const tipoClass = movimiento.tipo === "income" ? "text-green-600" : "text-red-600";
+
+    row.innerHTML = `
+      <td class="px-6 py-4">${movimiento.tipo === "income" ? "Ingreso" : "Gasto"}</td>
+      <td class="px-6 py-4">${movimiento.descripcion}</td>
+      <td class="px-6 py-4 ${tipoClass}">${movimiento.tipo === "income" ? "+" : "-"}$${Math.abs(movimiento.monto).toFixed(2)}</td>
+      <td class="px-6 py-4 text-right">
+        <button class="text-red-600 hover:text-red-800" onclick="eliminarMovimiento(${transacciones.indexOf(movimiento)})">Eliminar</button>
+      </td>
+    `;
+
+    transactionList.appendChild(row);
+  });
+};
+
+// Método para eliminar un movimiento
+function eliminarMovimiento(index) {
+  transacciones.splice(index, 1); // Eliminar el movimiento del array
+  const movimiento = new Movimiento(); // Crear una instancia para acceder a los métodos
+  movimiento.recalcularTotales(); // Recalcular los totales
+  movimiento.mostrarTransacciones(); // Actualizar la tabla
+}
+
+// Método para validar el movimiento
 Movimiento.prototype.validarMovimiento = function () {
-  // validar que el monto sea > 0
   if (this.monto <= 0) {
     return {
       ok: false,
@@ -67,85 +118,22 @@ Movimiento.prototype.validarMovimiento = function () {
     };
   }
 
-  // validar que descripcion no este vacio
-  // vacio === ""
-  // trim() remover espacios "hola como estas"
   if (this.descripcion.trim() === "") {
     return {
       ok: false,
-      message: "Debe completar la descripcion",
+      message: "Debe completar la descripción",
     };
   }
-  // solo aceptamos 1 y 2
+
   if (!["income", "expense"].includes(this.tipo)) {
     return {
       ok: false,
-      message: "El valor tipo es erroneo",
+      message: "El valor tipo es erróneo",
     };
   }
 
   return {
     ok: true,
-    message: "Moviento validado correctamente",
+    message: "Movimiento validado correctamente",
   };
 };
-
-// function registrarIngresoOEgreso() {
-//   while (true) {
-//     const descripcion = prompt("Ingrese la nueva transacción");
-//     const tipoDeTransaccion = prompt(
-//       "Escoja el tipo de transacción \n1) Ingreso\n2) Egreso\n\n Solo debe poner el número de la opción"
-//     );
-//     const monto = prompt("Ingrese el monto de la transacción");
-//     // antes de insertar el moviento al arreglo debo crear el objeto y ejecutar la validacion
-//     const moviento = new Movimiento(
-//       tipoDeTransaccion,
-//       Number(monto),
-//       descripcion
-//     );
-
-//     const validacion = moviento.validarMovimiento();
-
-//     if (!validacion.ok) {
-//       alert(validacion.message);
-//     } else {
-//       // si es true entonces agregamo el moviento a transacciones
-//       transacciones.push(moviento);
-//       // llamar a movieminto.render()
-//     }
-
-//     // transacciones.push({
-//     //   transaccion,
-//     //   tipoDeTransaccion,
-//     //   monto,
-//     //   fechaDeCreacion: new Date(),
-//     // });
-
-//     const confirmacion = confirm("Desea agregar otra transacción?");
-//     // ok => true: continuar con otra transaccion
-//     // cancel => false: terminar la transaccion
-//     // en que caso deberiamos detener el while
-//     if (confirmacion === false) {
-//       // detener el while
-//       break;
-//     }
-//   }
-// }
-
-// function mapTransactionNames() {
-//   const names = transacciones.map(function (transaccion) {
-//     return transaccion.transaccion;
-//   });
-//   console.log(names);
-// }
-
-// function filterTransactions() {
-//   // condiciones egreso y > 100
-//   const filtroDeDatos = transacciones.filter(
-//     (transaccion) =>
-//       transaccion.monto > 100 && transaccion.tipoDeTransaccion === "2"
-//   );
-//   console.log(filtroDeDatos);
-// }
-
-// registrarIngresoOEgreso();
