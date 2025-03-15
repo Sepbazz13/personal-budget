@@ -26,12 +26,11 @@ function createMovement(movement) {
 
   if (validacion.ok) {
     transacciones.push(nuevoMovimiento);
-    alert(validacion.message);
     form.reset();
     nuevoMovimiento.recalcularTotales(); // Actualizar los totales
     nuevoMovimiento.mostrarTransacciones(); // Mostrar las transacciones en la tabla
   } else {
-    alert(validacion.message);
+    alert(validacion.message); // Mostrar alerta solo si hay un error
   }
 }
 
@@ -108,6 +107,17 @@ function eliminarMovimiento(index) {
   movimiento.recalcularTotales(); // Recalcular los totales
   movimiento.mostrarTransacciones(); // Actualizar la tabla
 }
+
+// Método para limpiar todo
+function limpiarTodo() {
+  transacciones.length = 0; // Vaciar el array de transacciones
+  const movimiento = new Movimiento(); // Crear una instancia para acceder a los métodos
+  movimiento.recalcularTotales(); // Recalcular los totales
+  movimiento.mostrarTransacciones(); // Actualizar la tabla
+}
+
+// Escuchar el evento click del botón "Limpiar Todo"
+document.getElementById("clear-all").addEventListener("click", limpiarTodo);
 
 // Método para validar el movimiento
 Movimiento.prototype.validarMovimiento = function () {
